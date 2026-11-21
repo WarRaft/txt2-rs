@@ -1,0 +1,17 @@
+[package]
+name = "txt2-rs"
+version = "0.1.0"
+edition = "2024"
+description = "Parser, HTML renderer and highlighter for txt2, XGM's markup"
+license = "CC0-1.0"
+
+[[bin]]
+name = "txt2-rs"
+path = "src/main.rs"
+
+[lib]
+name = "txt2_rs"
+path = "src/lib.rs"
+
+[dependencies]
+parser-rs = { path = "../parser-rs" }

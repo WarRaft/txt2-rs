@@ -1,0 +1,22 @@
+__**Иконки**__ (https://xgm.guru/p/xgm/txt2-icons)
+В текст можно вставлять иконки FontAwesome 6.
+Для этого надо взять точное имя из списка FontAwesome 6 и написать /иконка/имя-иконки или /icon/имя-иконки
+Иконкам можно указывать размер от 1x до 5x.
+Примеры:
+
+ /иконка/flask
+/иконка/cube /icon/cubes
+/иконка/burger/1x /иконка/burger/2x /иконка/burger/3x /иконка/burger/4x /иконка/burger/5x
+++/иконка/palette++ ??/иконка/palette?? !!/иконка/palette!! // /иконка/palette // **/иконка/palette**
+[++/иконка/palette++] [??/иконка/palette??] [!!/иконка/palette!!] [[[/иконка/palette]]]
+Ссылка: __/иконка/palette__ (https://xgm.guru)
+
+Результат:
+
+
+
+
+
+
+
+Ссылка:

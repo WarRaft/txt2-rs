@@ -1,0 +1,128 @@
+__**Блоки исходного кода**__ (https://xgm.guru/p/xgm/txt2-code-blocks)
+Используются при вставке программного кода или консольных команд.
+Начинаются с {{ на отдельной строке, заканчиваются }} на отдельной строке.
+Если надо внутри такого блока вставить ``` на отдельной строке, следует поставить лишний пробел в конце такой строки.
+
+Допускается альтернативный вариант - тег "код" и вариант с "" из оригинального txt2.
+
+Примеры:
+
+```
+final class MyException extends Exception {}
+```
+
+""
+final class MyException extends Exception {}
+""
+
+((код
+final class MyException extends Exception {}
+))
+
+Результат:
+
+ final class MyException extends Exception {}
+
+ final class MyException extends Exception {}
+
+ final class MyException extends Exception {}
+
+Допускается подсказка, какой язык программирования находится в блоке:
+
+```cpp
+class MyException: public Exception {}
+```
+
+Результат:
+
+ class MyException: public Exception {}
+
+Доступные языки: perl, php, css, xml, html, javascript, java, cpp, sql, jass, lua, delphi, dos.
+
+Код под спойлером
+
+Пример:
+
+>> показать код
+""
+final class MyException extends Exception {}
+""
+<<
+
+Результат:
+
+
+показать код
+ final class MyException extends Exception {}
+
+
+Github Gists
+
+Поддерживается встраивание Github Gists: просто вставьте ссылку на gist на отдельной строке. Под спойлером тоже работает.
+
+Пример:
+https://gist.github.com/jonathonw/1725966
+
+Результат:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          #include <iostream>
+
+
+
+
+
+
+
+          int main()
+
+
+
+          {
+
+
+
+            std::cout << "Hello World!" << std::endl;
+
+
+
+            return 0;
+
+
+
+          }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        view raw
+
+          HelloWorld.cpp
+
+        hosted with ❤ by GitHub
