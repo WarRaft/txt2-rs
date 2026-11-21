@@ -69,7 +69,7 @@ Each starts a line; the ones that open run to their closing line.
 | `- item`, `* item`, `1. item`, `1) item`, `2.1. item` | lists; lines indented more belong to the item above |
 | rows with `\|` (or tabs), after a blank line | a table: `---` after the header rows; `<` joins a cell to its left, `^` to the one above; `>>> ` right, `<> ` centered; `{{\|}}` a `\|` in a cell |
 | `[ 5% ]`, `[ 2 / 5 ]`, `[ 4 / 3 - 19 ]`, `[ 28.11.2023 / 27.11.2025 ]` and text | a progress bar |
-| a link alone on its line | an image (`.png`, `.jpg` …; `<- `, `-> `, `<> ` before it: left, right, center), a video (YouTube, VK, Rutube, Twitch, Vimeo …, `.mp4`, `.webm`), a sound (`.mp3`), a gist |
+| a link alone on its line | an image (`.png`, `.jpg`, `.webp`, `.avif` …; `<- `, `-> `, `<> ` before it: left, right, center; ` - caption` after it, or ` (url)` for an image that links there; two or more on lines one after another, none aligned, make a gallery), a video (YouTube, VK, Rutube, Twitch, Vimeo …, `.mp4`, `.webm`), a sound (`.mp3`), a gist |
 | `((опрос title` … `))` | a poll: a line per option, `мультивыбор N`, `закрывается dd.mm.yyyy` |
 | `((плитка title` … `))` | a tile: its link, then an image or `/иконка/…`, then a description |
 

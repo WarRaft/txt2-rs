@@ -132,19 +132,18 @@ fn block(out: &mut String, b: &Block) {
             inlines(out, text);
             *out += "</div>\n";
         }
-        BlockKind::Media { kind, url, align } => {
-            let a = align.map_or("center", align_class);
-            let u = esc(url);
-            let inner = match kind {
-                Media::Image => format!("<a href=\"{u}\"><img src=\"{u}\" alt=\"\"></a>"),
-                Media::Audio => format!("<audio controls src=\"{u}\"></audio>"),
-                Media::Video if [".webm", ".mp4", ".ogg", ".ogv", ".ogm"].iter().any(|e| url.to_lowercase().ends_with(e)) => {
-                    format!("<video controls src=\"{u}\"></video>")
-                }
-                Media::Video => format!("<a class=\"t2-embed\" href=\"{u}\">▶ {u}</a>"),
-                Media::Gist => format!("<a class=\"t2-embed\" href=\"{u}\">{{ }} gist: {u}</a>"),
-            };
-            *out += &format!("<div class=\"t2-media t2-{a}\" data-line=\"{line}\">{inner}</div>\n");
+        BlockKind::Media(e) => {
+            let a = e.align.map_or("center", align_class);
+            *out += &format!("<div class=\"t2-media t2-{a}\" data-line=\"{line}\">");
+            embed(out, e);
+            *out += "</div>\n";
+        }
+        BlockKind::Gallery(list) => {
+            *out += &format!("<div class=\"t2-gallery\" data-line=\"{line}\">");
+            for e in list {
+                embed(out, e);
+            }
+            *out += "</div>\n";
         }
         BlockKind::Poll(p) => {
             *out += &format!("<div class=\"t2-poll\" data-line=\"{line}\"><div class=\"t2-poll-title\">Опрос: {}</div><ol>", esc(&p.title));
@@ -180,6 +179,31 @@ fn block(out: &mut String, b: &Block) {
             *out += "</a>\n";
         }
     }
+}
+
+/// What a link on its own line shows, with its caption.
+fn embed(out: &mut String, e: &Embed) {
+    let u = esc(&e.url);
+    let inner = match e.kind {
+        Media::Image => {
+            let href = esc(e.link.as_deref().unwrap_or(&e.url));
+            format!("<a href=\"{href}\"><img src=\"{u}\" alt=\"\"></a>")
+        }
+        Media::Audio => format!("<audio controls src=\"{u}\"></audio>"),
+        Media::Video if [".webm", ".mp4", ".ogg", ".ogv", ".ogm"].iter().any(|x| e.url.to_lowercase().ends_with(x)) => {
+            format!("<video controls src=\"{u}\"></video>")
+        }
+        Media::Video => format!("<a class=\"t2-embed\" href=\"{u}\">▶ {u}</a>"),
+        Media::Gist => format!("<a class=\"t2-embed\" href=\"{u}\">{{ }} gist: {u}</a>"),
+    };
+    *out += "<figure>";
+    *out += &inner;
+    if let Some(c) = &e.caption {
+        *out += "<figcaption>";
+        inlines(out, c);
+        *out += "</figcaption>";
+    }
+    *out += "</figure>";
 }
 
 /// A FontAwesome 6 icon (its solid style), `size` 1 to 5 times the

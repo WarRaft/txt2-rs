@@ -84,11 +84,12 @@ fn tables() {
 #[test]
 fn media_progress_polls_tiles() {
     let k = kinds("https://x.ru/a.png\n<- https://x.ru/b.jpg?x=1\nhttps://youtu.be/abc\nhttps://x.ru/s.mp3\nhttps://gist.github.com/a/1\n[ 5% ]\n[ 2 / 5 ] two of five\n[ 4 / 3 - 19 ]\n[ 28.11.2023 / 27.11.2025 ]\n");
-    assert_eq!(k[0], BlockKind::Media { kind: Media::Image, url: "https://x.ru/a.png".into(), align: None });
-    assert_eq!(k[1], BlockKind::Media { kind: Media::Image, url: "https://x.ru/b.jpg?x=1".into(), align: Some(Align::Left) });
-    assert!(matches!(k[2], BlockKind::Media { kind: Media::Video, .. }));
-    assert!(matches!(k[3], BlockKind::Media { kind: Media::Audio, .. }));
-    assert!(matches!(k[4], BlockKind::Media { kind: Media::Gist, .. }));
+    let embed = |kind, url: &str, align| Embed { kind, url: url.into(), align, caption: None, link: None };
+    assert_eq!(k[0], BlockKind::Media(embed(Media::Image, "https://x.ru/a.png", None)));
+    assert_eq!(k[1], BlockKind::Media(embed(Media::Image, "https://x.ru/b.jpg?x=1", Some(Align::Left))));
+    assert!(matches!(&k[2], BlockKind::Media(e) if e.kind == Media::Video));
+    assert!(matches!(&k[3], BlockKind::Media(e) if e.kind == Media::Audio));
+    assert!(matches!(&k[4], BlockKind::Media(e) if e.kind == Media::Gist));
     assert_eq!(k[5], BlockKind::Progress(Progress::Percent(5.0), vec![]));
     assert_eq!(k[6], BlockKind::Progress(Progress::Of(2.0, 5.0), vec![t("two of five")]));
     assert_eq!(k[7], BlockKind::Progress(Progress::Range(4.0, 3.0, 19.0), vec![]));
@@ -138,4 +139,19 @@ fn the_documentation_pages() {
         n += 1;
     }
     assert!(n >= 10);
+}
+
+#[test]
+fn images_captions_galleries_links() {
+    let k = kinds("https://x.ru/a.avif - a *cat*\nhttps://x.ru/b.png (https://xgm.guru)\n\nhttps://x.ru/c.png\n-> https://x.ru/d.png - right\nhttps://x.ru/e.png not an image line\n");
+    let BlockKind::Gallery(g) = &k[0] else { panic!("{:?}", k[0]) };
+    assert_eq!(g.len(), 2);
+    assert_eq!(g[0].caption, Some(vec![t("a "), Inline::Bold(vec![t("cat")])]));
+    assert_eq!(g[1].link.as_deref(), Some("https://xgm.guru"));
+    // A blank line between: no gallery; an aligned one is on its own.
+    assert!(matches!(&k[1], BlockKind::Media(e) if e.url == "https://x.ru/c.png"));
+    assert!(matches!(&k[2], BlockKind::Media(e) if e.align == Some(Align::Right) && e.caption == Some(vec![t("right")])));
+    assert!(matches!(&k[3], BlockKind::Paragraph(_)));
+    let html = html::render(&parse("https://x.ru/b.png (https://xgm.guru)\n"));
+    assert!(html.contains("<figure><a href=\"https://xgm.guru\"><img src=\"https://x.ru/b.png\""), "{html}");
 }

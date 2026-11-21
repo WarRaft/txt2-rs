@@ -92,7 +92,7 @@ pub(crate) fn parse(text: &str) -> Document {
     Document { blocks, errors: p.errors, tokens: p.toks }
 }
 
-const IMAGE: [&str; 7] = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"];
+const IMAGE: [&str; 8] = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".svg"];
 const VIDEO_FILES: [&str; 5] = [".webm", ".mp4", ".ogg", ".ogv", ".ogm"];
 const VIDEO_SITES: [&str; 9] = [
     "youtube.com/",
@@ -270,6 +270,20 @@ impl Parser {
             }
             if let Some((block, next)) = self.block(lines, i, blank, style) {
                 flush(self, &mut para, &mut out);
+                // Images on lines one after another, none aligned: a
+                // gallery.
+                let image = |b: &Block| matches!(&b.kind, BlockKind::Media(e) if e.kind == Media::Image && e.align.is_none());
+                if !blank && image(&block) && out.last().is_some_and(|b| image(b) || matches!(b.kind, BlockKind::Gallery(_))) {
+                    let last = out.last_mut().expect("checked");
+                    let BlockKind::Media(new) = block.kind else { unreachable!("an image") };
+                    match &mut last.kind {
+                        BlockKind::Gallery(list) => list.push(new),
+                        BlockKind::Media(first) => last.kind = BlockKind::Gallery(vec![first.clone(), new]),
+                        _ => unreachable!("checked"),
+                    }
+                    i = next;
+                    continue;
+                }
                 out.push(block);
                 i = next;
                 blank = false;
@@ -435,16 +449,43 @@ impl Parser {
             Some("<> ") => (Some(Align::Center), l.trim_start().skip(3)),
             _ => (None, l.trim_start()),
         };
-        let url = url_l.text.trim();
+        // The link, then ` - caption` or ` (link)`.
+        let url_l = url_l.trim_start();
+        let body = url_l.text.trim_end();
+        let url = body.split(char::is_whitespace).next().unwrap_or("");
         if inline::whole_url(url)
             && let Some(kind) = media(url)
         {
+            let len = url.chars().count();
+            let rest = &body[url.len()..];
+            let (caption_at, link) = if rest.starts_with(" - ") {
+                (Some(len + 3), None)
+            } else if let Some(inner) = rest.trim().strip_prefix('(').and_then(|r| r.strip_suffix(')'))
+                && inline::whole_url(inner)
+            {
+                (None, Some(inner.to_string()))
+            } else if rest.trim().is_empty() {
+                (None, None)
+            } else {
+                return None;
+            };
             if align.is_some() {
                 let lt = l.trim_start();
                 self.tok(l.n, lt.col, lt.col + 2, TokenKind::Marker);
             }
-            self.line_tok(url_l, TokenKind::Url);
-            return Some((at(BlockKind::Media { kind, url: url.to_string(), align }), i + 1));
+            self.tok(l.n, url_l.col, url_l.col + len, TokenKind::Url);
+            let caption = caption_at.map(|k| {
+                self.tok(l.n, url_l.col + len + 1, url_l.col + len + 2, TokenKind::Marker);
+                self.inline(url_l.skip(k), style)
+            });
+            if let Some(link) = &link {
+                let open = url_l.col + body.chars().count() - link.chars().count() - 2;
+                self.tok(l.n, open, open + 1, TokenKind::Marker);
+                self.tok(l.n, open + 1, open + 1 + link.chars().count(), TokenKind::Url);
+                self.tok(l.n, open + 1 + link.chars().count(), open + 2 + link.chars().count(), TokenKind::Marker);
+            }
+            let embed = Embed { kind, url: url.to_string(), align, caption, link };
+            return Some((at(BlockKind::Media(embed)), i + 1));
         }
         None
     }

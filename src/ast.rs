@@ -90,9 +90,24 @@ pub enum BlockKind {
     /// A progress bar and the text after it.
     Progress(Progress, Vec<Inline>),
     /// A link on a line of its own: an image, a video, a sound, a gist.
-    Media { kind: Media, url: String, align: Option<Align> },
+    Media(Embed),
+    /// Images on lines one after another, none aligned: two or more.
+    Gallery(Vec<Embed>),
     Poll(Poll),
     Tile(Tile),
+}
+
+/// What a link on a line of its own shows.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Embed {
+    pub kind: Media,
+    pub url: String,
+    /// `<-`, `->`, `<>` before it.
+    pub align: Option<Align>,
+    /// After ` - `.
+    pub caption: Option<Vec<Inline>>,
+    /// `(url)` after it: an image that is a link.
+    pub link: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
