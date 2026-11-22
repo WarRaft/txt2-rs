@@ -15,3 +15,14 @@ fn icons_are_fontawesome() {
     assert!(tile.contains("<span class=\"t2-tile-icon\"><i class=\"fa fa-solid fa-dice-d6 fa-2x\""), "{tile}");
     assert!(page(&crate::parse(""), "t").contains(FONTAWESOME));
 }
+
+#[test]
+fn tables_join_cells_on_a_grid() {
+    let html = render(&crate::parse("\na | < | b\n^ | ^ | c\nd | e | f\n"));
+    assert!(html.contains("<tr><td colspan=\"2\" rowspan=\"2\">a</td><td>b</td></tr><tr><td>c</td></tr><tr><td>d</td><td>e</td><td>f</td></tr>"), "{html}");
+    // A `^` under a header, or a `<` with nothing to join: an empty cell.
+    let html = render(&crate::parse("\nh | < | x\n---\nl | ^ | r\n< | y | z\n"));
+    assert!(html.contains("<tr><th colspan=\"2\">h</th><th>x</th></tr></thead><tbody><tr><td>l</td><td></td><td>r</td></tr><tr><td></td><td>y</td><td>z</td></tr>"), "{html}");
+    let list = render(&crate::parse("1. a\n2) b\n"));
+    assert!(list.contains("<ol class=\"t2-ol\" data-line=\"1\"><li><span class=\"t2-marker\">1.</span> a</li><li><span class=\"t2-marker\">2)</span> b</li></ol>"), "{list}");
+}

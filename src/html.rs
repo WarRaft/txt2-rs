@@ -214,26 +214,55 @@ fn icon(name: &str, size: u8) -> String {
 }
 
 fn list(out: &mut String, l: &List, line: Option<usize>) {
-    let tag = if l.ordered { "ol" } else { "ul" };
+    // A numbered list shows its markers as written (`2)`, `2.1.`).
+    let tag = if l.ordered { "ol class=\"t2-ol\"" } else { "ul" };
     let at = line.map(|n| format!(" data-line=\"{n}\"")).unwrap_or_default();
     *out += &format!("<{tag}{at}>");
     for item in &l.items {
         *out += "<li>";
-        if l.ordered && item.marker.trim_end_matches(['.', ')']).contains('.') {
+        if l.ordered {
             *out += &format!("<span class=\"t2-marker\">{}</span> ", esc(&item.marker));
         }
         inlines(out, &item.text);
         blocks(out, &item.blocks);
         *out += "</li>";
     }
-    *out += &format!("</{tag}>\n");
+    *out += if l.ordered { "</ol>\n" } else { "</ul>\n" };
 }
 
 fn table(out: &mut String, t: &Table, line: usize) {
     let width = t.rows.iter().map(Vec::len).max().unwrap_or(0);
-    // Each cell's span: columns to its right joined to it (`<`), rows
-    // below (`^`).
     let get = |r: usize, c: usize| t.rows.get(r).and_then(|row| row.get(c));
+    // Each text cell spans the `<` cells to its right and the `^` cells
+    // below it (not out of the header: it joins only across). Cells it
+    // spans are taken; a `<` or `^` with nothing to join is an empty cell.
+    let mut taken = vec![vec![false; width]; t.rows.len()];
+    let mut spans = vec![vec![(1, 1); width]; t.rows.len()];
+    for r in 0..t.rows.len() {
+        for c in 0..width {
+            if taken[r][c] || !matches!(get(r, c), Some(Cell::Text { .. })) {
+                continue;
+            }
+            let mut cols = 1;
+            while c + cols < width && !taken[r][c + cols] && matches!(get(r, c + cols), Some(Cell::Left)) {
+                cols += 1;
+            }
+            let mut rows = 1;
+            while r + rows < t.rows.len()
+                && (r + rows != t.header || t.header == 0)
+                && (r >= t.header || r + rows < t.header)
+                && (0..cols).all(|k| !taken[r + rows][c + k] && matches!(get(r + rows, c + k), Some(Cell::Up)))
+            {
+                rows += 1;
+            }
+            for (dr, row) in taken.iter_mut().skip(r).take(rows).enumerate() {
+                for (dc, cell) in row.iter_mut().skip(c).take(cols).enumerate() {
+                    *cell = dr > 0 || dc > 0;
+                }
+            }
+            spans[r][c] = (cols, rows);
+        }
+    }
     *out += &format!("<table data-line=\"{line}\">");
     for r in 0..t.rows.len() {
         if r == 0 && t.header > 0 {
@@ -245,34 +274,25 @@ fn table(out: &mut String, t: &Table, line: usize) {
         *out += "<tr>";
         let cell_tag = if r < t.header { "th" } else { "td" };
         for c in 0..width {
-            match get(r, c) {
-                Some(Cell::Left | Cell::Up) => continue,
-                cell => {
-                    let mut cols = 1;
-                    while matches!(get(r, c + cols), Some(Cell::Left)) {
-                        cols += 1;
-                    }
-                    let mut rows = 1;
-                    while matches!(get(r + rows, c), Some(Cell::Up)) {
-                        rows += 1;
-                    }
-                    let mut attrs = String::new();
-                    if cols > 1 {
-                        attrs += &format!(" colspan=\"{cols}\"");
-                    }
-                    if rows > 1 {
-                        attrs += &format!(" rowspan=\"{rows}\"");
-                    }
-                    if let Some(Cell::Text { align: Some(a), .. }) = cell {
-                        attrs += &format!(" class=\"t2-{}\"", align_class(*a));
-                    }
-                    *out += &format!("<{cell_tag}{attrs}>");
-                    if let Some(Cell::Text { text, .. }) = cell {
-                        inlines(out, text);
-                    }
-                    *out += &format!("</{cell_tag}>");
-                }
+            if taken[r][c] {
+                continue;
             }
+            let (cols, rows) = spans[r][c];
+            let mut attrs = String::new();
+            if cols > 1 {
+                attrs += &format!(" colspan=\"{cols}\"");
+            }
+            if rows > 1 {
+                attrs += &format!(" rowspan=\"{rows}\"");
+            }
+            if let Some(Cell::Text { align: Some(a), .. }) = get(r, c) {
+                attrs += &format!(" class=\"t2-{}\"", align_class(*a));
+            }
+            *out += &format!("<{cell_tag}{attrs}>");
+            if let Some(Cell::Text { text, .. }) = get(r, c) {
+                inlines(out, text);
+            }
+            *out += &format!("</{cell_tag}>");
         }
         *out += "</tr>";
         if r + 1 == t.header {

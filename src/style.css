@@ -74,4 +74,5 @@
 .t2 .t2-tile small { color: var(--t2-muted); }
 .t2 .t2-tile-icon { margin-bottom: .4em; color: var(--t2-link); }
 .t2 .t2-marker { color: var(--t2-muted); }
+.t2 ol.t2-ol { list-style: none; padding-left: 1.4em; }
 .t2 [data-line].t2-current { outline: 2px solid color-mix(in srgb, var(--t2-link) 35%, transparent); outline-offset: 2px; }

@@ -45,7 +45,7 @@ markup | result
 {{?word?}}, {{??several words??}} | ?accent?, ??accent 3, blue??
 {{// aside //}} | text // aside // text
 {{[[[label]]]}}, {{[!!…!!]}}, {{[++…++]}}, {{[??…??]}} | [[[label]]] [!!red!!] [++green++] [??blue??]
-two braces on each side: {{ and }} | {{*as it is*}}
+the text between two opening and two closing braces | {{*as it is*}}
 
 A single marker wraps one word: it opens after something that isn't a letter or digit, and closes before one, with no space inside. So C++, snake_case, xgm-team, a - b and 5 * 3 stay text.
 A double marker may wrap several words; a space may come before its closing one: !!Note: !!
@@ -174,11 +174,13 @@ A table starts after a blank line with a line holding {{|}}. Tabs work too, as p
 
 <> Header over two | < | >>> Right
 ---
-{{<}} joins the cell on the left | ^ | {{^}} joins the cell above
-merged down | a | b
+two cells joined by {{<}} | < | one
+two rows joined by {{^}} | a | b
 ^ | c {{|}} d | >>> right-aligned
+four cells: {{<}} and {{^}} | < | e
+^ | ^ | f
 
-A line of {{-}} after the first rows makes them the header. {{>>> text}} is right-aligned, {{<> text}} centered, and a {{|}} between two braces on each side is a {{|}} inside a cell, as in c {{|}} d.
+A line of {{-}} after the first rows makes them the header; the header joins only across. {{>>> text}} is right-aligned, {{<> text}} centered, and a {{|}} between two braces on each side is a {{|}} inside a cell, as in c {{|}} d.
 Rows may have different numbers of cells.
 
 === Progress bars ===
