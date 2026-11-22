@@ -19,7 +19,10 @@ const DOUBLE: [(char, TokenKind); 5] = [
 ];
 
 /// The search engines' letters.
-const SEARCH: [char; 5] = ['w', 'в', 'g', 'я', 's'];
+/// The search prefixes and their engines: English Wikipedia, Russian
+/// Wikipedia, Google, Yandex, the site. The site has the Cyrillic ones;
+/// `wr` and `y` are their Latin twins.
+const SEARCH: [(&str, char); 7] = [("wr", 'в'), ("w", 'w'), ("в", 'в'), ("g", 'g'), ("я", 'я'), ("y", 'я'), ("s", 's')];
 
 /// Parses the text of one line, `text`, starting at column `col` of line
 /// `line`; its tokens go to `toks`, its plain text as `style` when given.
@@ -270,21 +273,23 @@ impl P<'_> {
                 return Some((node, end));
             }
         }
-        // `w:term`, `в:term`, `g:`, `я:`, `s:`.
-        if SEARCH.contains(&c)
-            && self.boundary(i, from)
-            && self.c.get(i + 1) == Some(&':')
-            && self.c.get(i + 2).is_some_and(|c| !c.is_whitespace())
+        // `w:term`, `wr:` (`в:`), `g:`, `y:` (`я:`), `s:`.
+        if self.boundary(i, from)
+            && let Some(&(prefix, engine)) = SEARCH.iter().find(|(p, _)| {
+                let n = p.chars().count();
+                self.is(i, p) && self.c.get(i + n) == Some(&':') && self.c.get(i + n + 1).is_some_and(|c| !c.is_whitespace())
+            })
         {
-            let mut end = i + 2;
+            let start = i + prefix.chars().count() + 1;
+            let mut end = start;
             while end < to && !self.c[end].is_whitespace() {
                 end += 1;
             }
-            while end > i + 2 && ".,;:!?".contains(self.c[end - 1]) {
+            while end > start && ".,;:!?".contains(self.c[end - 1]) {
                 end -= 1;
             }
             self.tok(i, end, TokenKind::Mention);
-            return Some((Inline::Search(c, self.text(i + 2, end)), end));
+            return Some((Inline::Search(engine, self.text(start, end)), end));
         }
         // `/иконка/name/2x`, `/icon/name`.
         if c == '/' && (i == from || self.c[i - 1].is_whitespace() || !word_char(self.c[i - 1])) {

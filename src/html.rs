@@ -89,7 +89,7 @@ fn block(out: &mut String, b: &Block) {
             *out += &format!("<details class=\"t2-spoiler\" data-line=\"{line}\"><summary>");
             match title {
                 Some(t) => inlines(out, t),
-                None => *out += "раскрыть",
+                None => *out += "Show",
             }
             *out += "</summary><div class=\"t2-spoiler-body\">";
             blocks(out, inner);
@@ -146,7 +146,7 @@ fn block(out: &mut String, b: &Block) {
             *out += "</div>\n";
         }
         BlockKind::Poll(p) => {
-            *out += &format!("<div class=\"t2-poll\" data-line=\"{line}\"><div class=\"t2-poll-title\">Опрос: {}</div><ol>", esc(&p.title));
+            *out += &format!("<div class=\"t2-poll\" data-line=\"{line}\"><div class=\"t2-poll-title\">Poll: {}</div><ol>", esc(&p.title));
             for o in &p.options {
                 *out += "<li>";
                 inlines(out, o);
@@ -155,10 +155,10 @@ fn block(out: &mut String, b: &Block) {
             *out += "</ol>";
             if let Some(n) = p.multiple {
                 let n = n.unwrap_or((p.options.len() / 2) as u32);
-                *out += &format!("<div class=\"t2-note\">Мультивыбор. Вариантов на выбор: {n}</div>");
+                *out += &format!("<div class=\"t2-note\">Multiple choice: choose {n}</div>");
             }
             if let Some(c) = &p.closes {
-                *out += &format!("<div class=\"t2-note\">Заканчивается {} 12:00 мск.</div>", esc(c));
+                *out += &format!("<div class=\"t2-note\">Closes {} at 12:00 Moscow time</div>", esc(c));
             }
             *out += "</div>\n";
         }

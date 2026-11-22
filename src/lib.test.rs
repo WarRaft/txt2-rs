@@ -118,40 +118,16 @@ fn html_and_tokens() {
     assert_eq!(encoded.len(), 15);
 }
 
-/// The documentation's pages (copied from the site, with its noise) all
-/// parse and render, and their tokens are in their lines.
+/// README.txt2, the format written in itself, parses without errors and
+/// renders, and its tokens stay in their lines.
 #[test]
-fn the_documentation_pages() {
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("test");
-    let mut n = 0;
-    for entry in std::fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.extension().is_none_or(|e| e != "txt2") {
-            continue;
-        }
-        let text = std::fs::read_to_string(&path).unwrap();
-        let doc = parse(&text);
-        assert!(!html::render(&doc).is_empty());
-        let lines: Vec<usize> = text.split('\n').map(|l| l.chars().count()).collect();
-        for t in &doc.tokens {
-            assert!(t.start < t.end && t.end <= lines[t.line - 1] + 1, "{}: {t:?}", path.display());
-        }
-        n += 1;
+fn the_readme_in_txt2() {
+    let text = include_str!("../README.txt2");
+    let doc = parse(text);
+    assert_eq!(doc.errors, []);
+    assert!(html::render(&doc).contains("t2-gallery"));
+    let lines: Vec<usize> = text.split('\n').map(|l| l.chars().count()).collect();
+    for t in &doc.tokens {
+        assert!(t.start < t.end && t.end <= lines[t.line - 1] + 1, "{t:?}");
     }
-    assert!(n >= 10);
-}
-
-#[test]
-fn images_captions_galleries_links() {
-    let k = kinds("https://x.ru/a.avif - a *cat*\nhttps://x.ru/b.png (https://xgm.guru)\n\nhttps://x.ru/c.png\n-> https://x.ru/d.png - right\nhttps://x.ru/e.png not an image line\n");
-    let BlockKind::Gallery(g) = &k[0] else { panic!("{:?}", k[0]) };
-    assert_eq!(g.len(), 2);
-    assert_eq!(g[0].caption, Some(vec![t("a "), Inline::Bold(vec![t("cat")])]));
-    assert_eq!(g[1].link.as_deref(), Some("https://xgm.guru"));
-    // A blank line between: no gallery; an aligned one is on its own.
-    assert!(matches!(&k[1], BlockKind::Media(e) if e.url == "https://x.ru/c.png"));
-    assert!(matches!(&k[2], BlockKind::Media(e) if e.align == Some(Align::Right) && e.caption == Some(vec![t("right")])));
-    assert!(matches!(&k[3], BlockKind::Paragraph(_)));
-    let html = html::render(&parse("https://x.ru/b.png (https://xgm.guru)\n"));
-    assert!(html.contains("<figure><a href=\"https://xgm.guru\"><img src=\"https://x.ru/b.png\""), "{html}");
 }

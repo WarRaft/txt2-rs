@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn escapes_and_spoilers() {
     let html = render(&crate::parse(">>\n<b> & \"x\"\n<<\n"));
-    assert_eq!(html, "<details class=\"t2-spoiler\" data-line=\"1\"><summary>раскрыть</summary><div class=\"t2-spoiler-body\"><p data-line=\"2\">&lt;b&gt; &amp; &quot;x&quot;</p>\n</div></details>\n");
+    assert_eq!(html, "<details class=\"t2-spoiler\" data-line=\"1\"><summary>Show</summary><div class=\"t2-spoiler-body\"><p data-line=\"2\">&lt;b&gt; &amp; &quot;x&quot;</p>\n</div></details>\n");
     assert!(page(&crate::parse("x"), "a<b").contains("<title>a&lt;b</title>"));
 }
 

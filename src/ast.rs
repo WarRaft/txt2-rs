@@ -51,11 +51,31 @@ pub enum TokenKind {
     Progress,
 }
 
-/// A block, from its first line.
+/// A block, from its first line to its last (its closing line
+/// included).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Block {
     pub line: usize,
+    pub end: usize,
     pub kind: BlockKind,
+}
+
+/// The text of `inlines` without its markup: a title, a caption.
+pub fn plain(inlines: &[Inline]) -> String {
+    let mut out = String::new();
+    for i in inlines {
+        match i {
+            Inline::Text(t) | Inline::Code(t) => out += t,
+            Inline::Bold(x) | Inline::Italic(x) | Inline::Strike(x) | Inline::Accent(_, x) | Inline::Offtop(x) | Inline::Label(_, x) => {
+                out += &plain(x)
+            }
+            Inline::Link { text, .. } => out += &plain(text),
+            Inline::User(n) | Inline::Project(n) => out += n,
+            Inline::Search(_, t) => out += &t.replace('+', " "),
+            Inline::Icon(..) => {}
+        }
+    }
+    out
 }
 
 /// How an image or a block is aligned.

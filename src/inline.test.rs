@@ -49,6 +49,8 @@ fn the_rest() {
     ]);
     assert_eq!(p("mail a@b.c"), [t("mail a@b.c")]);
     assert_eq!(p("w:English_Wikipedia, я:Яндекс"), [Search('w', "English_Wikipedia".into()), t(", "), Search('я', "Яндекс".into())]);
+    assert_eq!(p("wr:Варкрафт y:query"), [Search('в', "Варкрафт".into()), t(" "), Search('я', "query".into())]);
+    assert_eq!(p("Note: yes, row:3"), [t("Note: yes, row:3")]);
     assert_eq!(p("/иконка/burger/3x /icon/cube"), [Icon("burger".into(), 3), t(" "), Icon("cube".into(), 1)]);
 }
 

@@ -1,0 +1,235 @@
+== txt2 ==
+[[[markup]]] [++every keyword in English too++] [??never fails??]
+
+txt2 is the markup of __XGM__ (https://xgm.guru), the Warcraft III modding site: its articles, resource pages and comments are written in it.
+This file describes it and is written in it, so it shows every construct it describes. // README.md says the same in Markdown. //
+
+((cut Contents
+- Inline: emphasis, accents, labels, links, mentions, icons
+- Blocks:
+ 1. headings, rules, quotes, spoilers, alignment, layouts
+ 2. code, lists, tables, progress bars
+ 3. images, videos, polls, tiles
+- Errors
+))
+
+A text is lines. A line break is kept: these two lines
+are two lines on the page, not one paragraph. Blank lines separate blocks.
+What isn't markup is text, and a marker without its closing one stays as it is written: **open.
+
+The site's keywords are Russian. Each has an English twin, and both are read the same:
+
+Russian | English
+---
+{{((кат}} | {{((cut}}, {{((spoiler}}
+{{((цитата}} | {{((quote}}
+{{((центр}}, {{((вправо}} | {{((center}}, {{((right}}
+{{((макет}}, {{((блок33}}, {{((блок50}}, {{((блок66}} | {{((layout}}, {{((block33}}, {{((block50}}, {{((block66}}
+{{((код}} | {{((code}}
+{{((опрос}}, {{мультивыбор}}, {{закрывается}} | {{((poll}}, {{multichoice}}, {{closes}}
+{{((плитка}} | {{((tile}}
+{{/иконка/}} | {{/icon/}}
+{{в:}}, {{я:}} | {{wr:}}, {{y:}}
+
+---
+
+== Inline ==
+
+markup | result
+---
+{{*word*}}, {{**several words**}} | *bold*, **several words**
+{{_word_}}, {{__several words__}} | _italic_, __several words__
+{{-word-}}, {{--several words--}} | -struck-, --several words--
+{{!word!}}, {{!!several words!!}} | !accent!, !!accent 1, red!!
+{{+word+}}, {{++several words++}} | +accent+, ++accent 2, green++
+{{?word?}}, {{??several words??}} | ?accent?, ??accent 3, blue??
+{{// aside //}} | text // aside // text
+{{[[[label]]]}}, {{[!!…!!]}}, {{[++…++]}}, {{[??…??]}} | [[[label]]] [!!red!!] [++green++] [??blue??]
+two braces on each side: {{ and }} | {{*as it is*}}
+
+A single marker wraps one word: it opens after something that isn't a letter or digit, and closes before one, with no space inside. So C++, snake_case, xgm-team, a - b and 5 * 3 stay text.
+A double marker may wrap several words; a space may come before its closing one: !!Note: !!
+Markers nest: **bold __and italic__**.
+
+=== Links ===
+
+markup | result
+---
+{{https://xgm.guru/p/xgm}} | https://xgm.guru/p/xgm
+{{__several words__ (https://xgm.guru)}} | __several words__ (https://xgm.guru)
+{{_word_ (https://xgm.guru)}} | _word_ (https://xgm.guru)
+{{Word (https://xgm.guru)}} | Word (https://xgm.guru)
+{{[Markdown style](https://xgm.guru)}} | [Markdown style](https://xgm.guru)
+{{@XGM+Bot}}, {{~~XGM Bot~~}}, {{@p/xgm}} | @XGM+Bot, ~~XGM Bot~~, @p/xgm
+{{w:Warcraft_III}}, {{wr:Warcraft_III}} | w:Warcraft_III, wr:Warcraft_III
+{{g:txt2}}, {{y:txt2}}, {{s:txt2}} | g:txt2, y:txt2, s:txt2
+{{/icon/flask}}, {{/icon/cube/2x}} | /icon/flask /icon/cube/2x
+
+The schemes are http, https and ftp after {{://}}, and mailto, callto, skype, sip, sips, tg, steam, tel, bitcoin and facetime after {{:}}.
+A bare link ends at a space: punctuation after it, or a closing parenthesis it didn't open, is not part of it.
+A user's name has {{+}} for a space. Searches go to the English and the Russian Wikipedia, Google, Yandex and the site.
+Icons are FontAwesome 6, 1x to 5x.
+
+== Blocks ==
+
+A block starts a line; spaces before it are allowed. Blocks that open run to their closing line, which is alone on its line, and blocks inside them are read as anywhere else.
+
+=== Headings and rules ===
+
+```
+# Level 1 as in Markdown
+## Level 2
+== Level 2, as many = as the level ==
+===Level 3
+---
+```
+
+A line of one or more {{-}} is a rule:
+
+---
+
+=== Quotes ===
+
+> A quote, a line at a time.
+>
+> > Quotes nest.
+
+((quote
+A quote of several lines,
+without a > on each.
+))
+
+=== Spoilers ===
+
+>> Click to open
+Hidden until clicked. Without a title, the preview writes «Show».
+<<
+
+((spoiler A spoiler as a tag
+{{((cut title}} and {{((spoiler title}} are the same.
+>> Spoilers nest
+Like this.
+<<
+))
+
+=== Alignment and layouts ===
+
+((center
+This is centered.
+))
+
+((right
+This is on the right.
+))
+
+((layout
+((block50
+=== Left half ===
+A layout is a row of columns: block33, block50 and block66, a third, a half or two thirds wide.
+))
+((block50
+=== Right half ===
+Each column is read as a page of its own: everything works in it.
+))
+))
+
+=== Code ===
+
+```cpp
+// Code keeps its lines as they are, with no *markup*.
+class MyException: public Exception {}
+```
+
+""
+Two quotes open and close code too.
+""
+
+((code jass
+function Hello takes nothing returns nothing
+    call BJDebugMsg("((code with a language")
+endfunction
+))
+
+{{
+{{ alone on its line opens text as it is, its lines kept: *no* !markup!.
+}}
+
+A fence closes at a line that is exactly the fence; with a space after it, the line is code.
+The site highlights perl, php, css, xml, html, javascript, java, cpp, sql, jass, lua, delphi and dos.
+
+=== Lists ===
+
+- {{-}} and {{*}} start an item
+* both are the same
+ 1. numbered items: digits and a dot
+ 2) or a parenthesis
+  2.1. and dots between levels
+- lines indented more than the marker belong to the item above
+
+All items of a list share an indent; a blank line ends it.
+
+=== Tables ===
+
+A table starts after a blank line with a line holding {{|}}. Tabs work too, as pasted from a spreadsheet.
+
+<> Header over two | < | >>> Right
+---
+{{<}} joins the cell on the left | ^ | {{^}} joins the cell above
+merged down | a | b
+^ | c {{|}} d | >>> right-aligned
+
+A line of {{-}} after the first rows makes them the header. {{>>> text}} is right-aligned, {{<> text}} centered, and a {{|}} between two braces on each side is a {{|}} inside a cell, as in c {{|}} d.
+Rows may have different numbers of cells.
+
+=== Progress bars ===
+
+[ 75% ] a share
+[ 3 / 4 ] a count of a total
+[ 4 / 3 - 19 ] a value between a minimum and a maximum
+[ 01.01.2026 / 01.01.2027 ] a countdown between two dates, Moscow time
+
+=== Images, videos, sounds ===
+
+A link alone on its line embeds it: an image (png, jpg, jpeg, gif, webp, avif, bmp, svg), a video (YouTube, VK, Rutube, PLVideo, Twitch, Vimeo, Dailymotion, Bilibili, mp4, webm, ogg), a sound (mp3), or a GitHub gist.
+
+https://xgm.guru/files/100/235701/minimap.png - the minimap's icons, with a caption
+
+-> https://xgm.guru/files/100/235701/minimap.png - on the right
+{{<-}}, {{->}} and {{<>}} before an image put it on the left, on the right or in the center of the text.
+A caption follows {{ - }}, and {{(url)}} after an image makes it a link there.
+
+https://xgm.guru/files/100/235701/minimap.png (https://xgm.guru)
+https://xgm.guru/files/100/235701/minimap.png - two images, one line after the other: a gallery
+
+=== Polls ===
+
+((poll Which keywords do you write?
+multichoice 1
+closes 31.12.2030
+Russian
+English
+Both
+))
+
+A poll has 2 to 32 options. {{multichoice N}} lets a voter choose N, half of them without a number; {{closes dd.mm.yyyy}} ends it at noon, Moscow time.
+
+=== Tiles ===
+
+((tile txt2 on XGM
+https://xgm.guru/p/xgm/txt2-basics
+/icon/book
+The site's own documentation
+))
+((tile Resources
+https://xgm.guru/p/gamedev/resources
+https://xgm.guru/files/100/235701/minimap.png
+A tile with an image
+))
+
+A tile has its link, then an image or an icon, then a description. Tiles one after another make a row.
+
+== Errors ==
+
+A text always reads. What's reported, at its line:
+- a block without its closing line: {{((cut}} without {{))}}, {{>>}} without {{<<}}, a code fence without its end
+- a {{))}} or {{<<}} that closes nothing

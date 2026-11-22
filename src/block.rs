@@ -249,9 +249,9 @@ impl Parser {
             if para.is_empty() {
                 return;
             }
-            let line = para[0].n;
+            let (line, end) = (para[0].n, para[para.len() - 1].n);
             let text = para.iter().map(|l| p.inline(*l, style)).collect();
-            out.push(Block { line, kind: BlockKind::Paragraph(text) });
+            out.push(Block { line, end, kind: BlockKind::Paragraph(text) });
             para.clear();
         };
         while i < lines.len() {
@@ -268,13 +268,15 @@ impl Parser {
                 self.line_tok(l, TokenKind::Tag);
                 return (out, i + 1, true);
             }
-            if let Some((block, next)) = self.block(lines, i, blank, style) {
+            if let Some((mut block, next)) = self.block(lines, i, blank, style) {
                 flush(self, &mut para, &mut out);
+                block.end = lines[next - 1].n;
                 // Images on lines one after another, none aligned: a
                 // gallery.
                 let image = |b: &Block| matches!(&b.kind, BlockKind::Media(e) if e.kind == Media::Image && e.align.is_none());
                 if !blank && image(&block) && out.last().is_some_and(|b| image(b) || matches!(b.kind, BlockKind::Gallery(_))) {
                     let last = out.last_mut().expect("checked");
+                    last.end = block.end;
                     let BlockKind::Media(new) = block.kind else { unreachable!("an image") };
                     match &mut last.kind {
                         BlockKind::Gallery(list) => list.push(new),
@@ -307,7 +309,7 @@ impl Parser {
         let l = lines[i];
         let t = l.text.trim_end();
         let tt = t.trim_start();
-        let at = |kind| Block { line: l.n, kind };
+        let at = |kind| Block { line: l.n, end: l.n, kind };
 
         // Code: ```lang ... ```, "" ... "", and {{ ... }} without formatting.
         for (open, end) in [("```", "```"), ("\"\"", "\"\""), ("{{", "}}")] {
@@ -624,7 +626,7 @@ impl Parser {
             rows.push(row);
             k += 1;
         }
-        (Block { line: lines[i].n, kind: BlockKind::Table(Table { header, rows }) }, k)
+        (Block { line: lines[i].n, end: lines[i].n, kind: BlockKind::Table(Table { header, rows }) }, k)
     }
 
     fn list(&mut self, lines: &[L], i: usize, style: Option<TokenKind>) -> (Block, usize) {
@@ -660,6 +662,6 @@ impl Parser {
                 break;
             }
         }
-        (Block { line: lines[i].n, kind: BlockKind::List(List { ordered, items }) }, k)
+        (Block { line: lines[i].n, end: lines[i].n, kind: BlockKind::List(List { ordered, items }) }, k)
     }
 }
