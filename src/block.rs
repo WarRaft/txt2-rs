@@ -81,10 +81,10 @@ struct Parser {
 }
 
 pub(crate) fn parse(text: &str) -> Document {
-    let lines: Vec<L> = text
-        .split('\n')
+    // Every line, `\r\n`, `\n` or a lone `\r` ending it.
+    let lines: Vec<L> = parser_rs::lines::split(text)
         .enumerate()
-        .map(|(i, t)| L { n: i + 1, col: 1, text: t.strip_suffix('\r').unwrap_or(t) })
+        .map(|(i, t)| L { n: i + 1, col: 1, text: t })
         .collect();
     let mut p = Parser { toks: Vec::new(), errors: Vec::new() };
     let (blocks, _, _) = p.seq(&lines, 0, None, None);
